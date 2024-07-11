@@ -1,0 +1,147 @@
+---
+title: "MTCars Dataset Analysis"
+author: "Alexa Benson"
+date: "2024-06-27"
+output:
+  html_document: default
+  pdf_document: default
+  always_allow_html: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(datasets)
+library(plotly)
+library(reshape2)
+library(shiny)
+```
+
+# Data Summary
+
+From the data summary, we can see that the average miles per gallon (mpg) is about 20.1, with a range from 10.4 to 33.9. Similarly, other variables like horsepower (hp), weight (wt), and the number of cylinders (cyl) show considerable variation.
+
+```{r data-summary}
+data(mtcars)
+summary(mtcars)
+```
+
+# Correlation Analysis
+
+Investigate the relationships between different variables.The correlation matrix reveals the strength and direction of linear relationships between variables. There is a strong negative correlation between horsepower (hp) and miles per gallon (mpg) (-0.78), suggesting that cars with higher horsepower tend to have lower fuel efficiency. Additionally, weight (wt) and mpg also show a strong negative correlation (-0.87), reinforcing the idea that heavier cars are less fuel-efficient.
+
+```{r cor}
+cor(mtcars)
+```
+# Distribution of a Single Variable
+
+The histogram of miles per gallon (mpg) shows that most cars have mpg values between 15 and 25. The distribution appears slightly right-skewed, indicating that there are a few cars with exceptionally high mpg.
+
+```{r dist-var}
+p <- ggplot(mtcars, aes(x=mpg)) + 
+    geom_histogram(binwidth=1, fill="#b44de0", color="black") + 
+    theme_minimal() + 
+    labs(title="Distribution of Miles per Gallon", 
+         x="Miles per Gallon", 
+         y="Count")
+
+if (knitr::is_html_output()) {
+  ggplotly(p)
+} else {
+  print(p)
+}
+```
+
+# Boxplots for categorical variables
+
+The boxplot comparing mpg across different numbers of cylinders (cyl) shows that cars with fewer cylinders generally have higher mpg. Specifically, 4-cylinder cars have the highest median mpg, followed by 6-cylinder and then 8-cylinder cars. This indicates that cars with more cylinders tend to be less fuel-efficient.
+
+```{r boxplotcat}
+p <- ggplot(mtcars, aes(x=factor(cyl), y=mpg)) + 
+    geom_boxplot() + 
+    theme_minimal() + 
+    labs(title="Miles per Gallon by Number of Cylinders", 
+         x="Number of Cylinders", 
+         y="Miles per Gallon")
+  if (knitr::is_html_output()) {
+  ggplotly(p)
+} else {
+  print(p)
+}
+```
+
+# Facited plots
+
+The faceted scatter plots show the relationship between horsepower (hp) and miles per gallon (mpg) across different numbers of cylinders (cyl). Each facet represents a subset of the data for a specific cylinder count, revealing that the negative relationship between hp and mpg is consistent across all cylinder groups, but cars with more cylinders generally have lower mpg.
+
+```{r plot-facet}
+p <- ggplot(mtcars, aes(x=hp, y=mpg, color=factor(cyl))) + 
+    geom_point(size = 3, alpha = 0.7) + 
+    theme_minimal() + 
+    labs(title="Miles per Gallon vs Horsepower by Cylinders", 
+         x="Horsepower", 
+         y="Miles per Gallon",
+         color = "Cylinders") +
+    scale_color_manual(values = c("4" = "#008080", "6" = "#FDDA0D", "8" = "#C154C1"))
+
+if (knitr::is_html_output()) {
+  ggplotly(p)
+} else {
+  print(p)
+}
+```
+
+# Pairwise plots
+
+The pairwise scatter plots provide a comprehensive view of relationships between all pairs of variables. We can observe that both weight (wt) and displacement (disp) have strong negative relationships with mpg, while positively correlating with each other. This helps identify multicollinearity and understand how variables interact with one another.
+
+```{r plot-pairwise}
+pairs(mtcars)
+```
+
+# Linear Regression Analysis
+
+The linear regression analysis models mpg as a function of horsepower (hp), weight (wt), and number of cylinders (cyl). The results show that all three variables significantly impact mpg, with weight and horsepower having the largest negative coefficients. This quantifies the earlier observations that heavier and more powerful cars are less fuel-efficient.
+
+```{r model-reg}
+model <- lm(mpg ~ hp + wt + cyl, data=mtcars)
+summary(model)
+```
+# Heatmap of correlations
+
+The heatmap visualizes the correlation matrix, showing strong negative correlations between mpg and both horsepower (hp) and weight (wt), and strong positive correlations between horsepower (hp) and weight (wt). 
+
+```{r heatmap}
+cor_matrix <- cor(mtcars)
+melted_cor_matrix <- melt(cor_matrix)
+p <- ggplot(melted_cor_matrix, aes(x=Var1, y=Var2, fill=value)) + 
+    geom_tile() + 
+    scale_fill_gradient2(low="aquamarine", high="#C154C1", mid="white", midpoint=0, limit=c(-1,1)) + 
+    theme_minimal() + 
+    labs(title="Correlation Heatmap")
+  print(p)
+```
+
+# Density plots
+
+The density plot for miles per gallon (mpg) shows a smooth distribution curve, indicating the probability density of different mpg values. The plot confirms that most cars have mpg values around 20, with a long tail on the right side, indicating a few highly fuel-efficient cars.
+
+```{r plot-density}
+p <- ggplot(mtcars, aes(x=mpg)) + 
+    geom_density(fill="blue", alpha=0.5) + 
+    theme_minimal() + 
+    labs(title="Density Plot of Miles per Gallon", 
+         x="Miles per Gallon", 
+         y="Density")
+
+if (knitr::is_html_output()) {
+  ggplotly(p)
+} else {
+  print(p)
+}
+```
+
+
+
+
+
